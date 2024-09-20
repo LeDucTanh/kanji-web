@@ -1,0 +1,28 @@
+version: '3'
+services:
+  node-builder-web:
+    image: node:18
+    volumes:
+      - ./:/var/www/html
+    container_name: node-builder-web
+    command: >
+      bash -c "cd /var/www/html && yarn install && yarn build"
+
+  kanji-web:
+    depends_on:
+      - node-builder-web
+    image: nginx
+    ports:
+      - '80:80'
+    restart: always
+    volumes:
+      - ./config/nginx-custom.conf:/etc/nginx/conf.d/default.conf
+      - ./config/mime.types:/etc/nginx/mime.types
+      - ./dist:/usr/share/nginx/html
+    container_name: kanji-web
+    networks:
+      - kanji-web
+
+networks:
+  kanji-web:
+    driver: bridge
